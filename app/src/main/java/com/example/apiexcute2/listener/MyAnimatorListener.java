@@ -4,10 +4,9 @@ import android.animation.Animator;
 import android.view.View;
 import android.view.ViewPropertyAnimator;
 
-import com.alibaba.fastjson.JSONObject;
 import com.example.apiexcute2.Event.AnimatorNode;
 import com.example.apiexcute2.Event.MethodTrackPool;
-import com.example.apiexcute2.Event.MyEvent;
+import com.example.apiexcute2.model.eventModel.MyEvent;
 import com.example.apiexcute2.dataRecord.ViewAnimationScrollRecord;
 import com.example.apiexcute2.util.ProcessEventUtil;
 import com.example.apiexcute2.util.ViewUtil;
@@ -58,10 +57,10 @@ public class MyAnimatorListener implements Animator.AnimatorListener {
         }
         View view = record.getViewByViewPropertyAnimator(viewPropertyAnimator);
         String viewPath = ViewUtil.getViewPath(view);
-        MyEvent myEvent = MethodTrackPool.getInstance().getMyEvent();
-        ProcessEventUtil.updateEventState(viewPath, AnimatorNode.ViewPropertyAnimatorType,myEvent);
-        record.removeViewPropertyAnimatorRecord(viewPropertyAnimator);
-        originalListener.onAnimationEnd(animation);
+//        MyEvent myEvent = MethodTrackPool.getInstance().getMyEvent();
+//        ProcessEventUtil.updateEventState(viewPath, AnimatorNode.ViewPropertyAnimatorType,myEvent);
+//        record.removeViewPropertyAnimatorRecord(viewPropertyAnimator);
+//        originalListener.onAnimationEnd(animation);
     }
 
     @Override

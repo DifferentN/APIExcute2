@@ -62,14 +62,16 @@ public class ActivityOnCreateHook extends XC_MethodHook {
         filter.addAction(LocalActivityReceiver.START_EVENT);
         filter.addAction(LocalActivityReceiver.EXECUTE_EVENT);
         filter.addAction(LocalActivityReceiver.ON_RESUME);
+        filter.addAction(LocalActivityReceiver.CAPTURE_PAGE_CONTENT);
 
         Object o = XposedHelpers.getAdditionalInstanceField(activity,"iasReceiver");
         if(o!=null){
             return;
         }
-
+//        Log.i("LZH","register boradeciver "+activity.getClass().getName());
         XposedHelpers.setAdditionalInstanceField(activity, "iasReceiver", receiver);
-        activity.getApplication().registerReceiver(receiver,filter);
+//        activity.getApplication().registerReceiver(receiver,filter);
+        activity.registerReceiver(receiver,filter);
     }
     private void showClassName(String pkName, Context context){
         List<String> names = getClassName(pkName,context);

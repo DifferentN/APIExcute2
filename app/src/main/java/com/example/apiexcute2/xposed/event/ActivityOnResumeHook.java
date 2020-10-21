@@ -35,7 +35,6 @@ public class ActivityOnResumeHook extends XC_MethodHook {
         Activity activity = (Activity) param.thisObject;
         ComponentName componentName = activity.getComponentName();
         String activityName = componentName.getClassName();
-        Log.i("LZH","after resume "+componentName.getClassName());
 
         Intent intent = new Intent();
         intent.setAction(LocalActivityReceiver.ON_RESUME);

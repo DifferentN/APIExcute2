@@ -10,21 +10,21 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 
-public class SaveIntentView extends View {
+public class FloatButtonView extends View {
     public int width,height;
     private Paint mPaint;
     private float lastX,lastY;
     private WindowManager.LayoutParams layoutParams;
     private WindowManager windowManager;
-    public SaveIntentView(Context context) {
+    public FloatButtonView(Context context) {
         this(context,null);
     }
 
-    public SaveIntentView(Context context,  AttributeSet attrs) {
+    public FloatButtonView(Context context, AttributeSet attrs) {
         this(context, attrs,-1);
     }
 
-    public SaveIntentView(Context context,  AttributeSet attrs, int defStyleAttr) {
+    public FloatButtonView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         mPaint = new Paint();
         windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);

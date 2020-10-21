@@ -1,12 +1,14 @@
 package com.example.apiexcute2.Event;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Environment;
 import android.util.Log;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.example.apiexcute2.builder.WorkFlowBuilder;
+import com.example.apiexcute2.model.eventModel.MyEvent;
+import com.example.apiexcute2.model.workModel.WorkItem;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -17,13 +19,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MethodTrackPool {
+    /**
+     * 表示在onDraw时已经选择出要执行的WorkItem
+     */
+    public static final int SELECTED = 1;
+    /**
+     * 表示在onDraw时未选择出要执行的WorkItem
+     * 原因：1 开始执行时
+     * 2 在LocalActivityReceiver收到EXECUTE_EVENT通知后
+     */
+    public static final int UNSELECTED = -1;
     private Context context;
     private static volatile MethodTrackPool methodTrackPool;
-    private static List<MyEvent> events;
-    private static MyEvent curEvent;
+    private WorkItem workFlowHead;
+    private List<WorkItem> candidateWorkItems;
+    private WorkItem selectedWorkItem;
     private boolean executeActionState = false; //false 表示当前操作未执行
     private static boolean isAvailable = false;
-    private static int myEventPoint = 0;
+    private int selectedWorkItemState=UNSELECTED;
+
     public MethodTrackPool(){
         readSequence("ankiLogDetail.txt");
     }
@@ -56,29 +70,14 @@ public class MethodTrackPool {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        JSONArray jsonArray = JSONArray.parseArray(buf.toString());
-        events = new ArrayList<>();
-        MyEvent myEvent = null;
-        for(int i=0;i<jsonArray.size();i++){
-            myEvent = transformJSONToMyEvent(jsonArray.getJSONObject(i));
-            events.add(myEvent);
-        }
-    }
-    private MyEvent transformJSONToMyEvent(JSONObject jsonObject){
-        String activityId = jsonObject.getString(MyEvent.ACTIVITY_ID);
-        String viewID = jsonObject.getString(MyEvent.VIEW_ID);
-        String viewPath = jsonObject.getString(MyEvent.VIEW_PATH);
-        String methodName = jsonObject.getString(MyEvent.METHOD_NAME);
-        String parameter = jsonObject.getString(MyEvent.PARAMETER_VALUE);
-        MyEvent myEvent = new MyEvent(activityId,viewID,viewPath,methodName);
-        myEvent.setParameters(parameter);
-        JSONArray animatorViews = jsonObject.getJSONArray(MyEvent.SNAPSHOT);
-        List<AnimatorNode> snapshot = new ArrayList<>();
-        for(int i=0;i<animatorViews.size();i++){
-            snapshot.add(transformJSONToAnimatorNode(animatorViews.getJSONObject(i)));
-        }
-        myEvent.setSnapshot(snapshot);
-        return myEvent;
+        JSONObject jsonObject = JSONObject.parseObject(buf.toString());
+        workFlowHead = WorkFlowBuilder.buildWorkFlow(jsonObject);
+
+        candidateWorkItems = new ArrayList<>();
+        candidateWorkItems.add(workFlowHead);
+
+        //设置要执行的第一个用户操作（默认操作，不需要与当前的页面状态作比较）
+        selectedWorkItem = workFlowHead;
     }
     private AnimatorNode transformJSONToAnimatorNode(JSONObject jsonObject){
         String viewPath = jsonObject.getString(MyEvent.VIEW_PATH);
@@ -97,52 +96,79 @@ public class MethodTrackPool {
                 jsonObject.getIntValue(AnimatorNode.ViewPropertyAnimatorType));
         return animatorNode;
     }
-    public MyEvent getMyEvent(){
-        if(myEventPoint>=events.size()){
-            return null;
-        }
-        return events.get(myEventPoint);
-    }
-    public void finishCurEvent(){
-        myEventPoint++;
-    }
+
     public static boolean isAvailable(){
         return isAvailable;
     }
+
+    /**
+     * 设置API是否可以执行
+     * @param b true表示API可以执行
+     */
     public void setAvailable(boolean b){
         isAvailable = b;
-    }
-    private void sendNotification(MyEvent myEvent){
-
     }
 
     public void setContext(Context context){
         this.context = context;
     }
 
-    public void LaunchUserAction(){
-        if(!isAvailable()){
-            return;
-        }
-
+    /**
+     * 获取候选操作集合
+     * @return
+     */
+    public List<WorkItem> getCandidateWorkItems(){
+        return candidateWorkItems;
     }
 
-    private boolean checkEqual(String curMethod,String invoke){
-        int start = 0,end = 0;
-        while(start>=0){
-            start = curMethod.indexOf("(",start);
-            end = curMethod.indexOf(":",start);
-            if(end<0){
-                end = curMethod.indexOf(")",start);
-            }
-            if(start<0){
-                break;
-            }
-            if(!invoke.contains(curMethod.substring(start,end))){
-                return false;
-            }
-            start = end+1;
+    /**
+     * 设置将要执行的操作
+     * @param workItem 表示将要执行的操作
+     */
+    public void setSelectedWorkItem(WorkItem workItem){
+        selectedWorkItem = workItem;
+        //表示selectedWorkItem还未执行
+        executeActionState = false;
+    }
+
+    /**
+     * 在某个用户操作执行完成后，将此操作的后继操作设置为候选操作
+     * @param workItem 表示已经执行完成的用户操作
+     */
+    public void resetCandidateWordItem(WorkItem workItem){
+        //表示selectedWorkItem 执行完成
+        executeActionState = true;
+        candidateWorkItems = workItem.getNextWorks();
+        Log.i("LZH","workItem finish: "+System.currentTimeMillis());
+    }
+
+    /**
+     * 返回将要执行的操作
+     * @return
+     */
+    public WorkItem getSelectedWorkItem(){
+        if(!executeActionState){
+            return selectedWorkItem;
         }
-        return true;
+        return null;
+    }
+
+    /**
+     * 查看当前的API是否执行完成
+     * @return
+     */
+    public boolean isAPIFinished(){
+        if(candidateWorkItems==null||candidateWorkItems.isEmpty()){
+            return true;
+        }
+        return false;
+    }
+
+    public void setSelectedWorkItemState(int selectedWorkItemState) {
+        this.selectedWorkItemState = selectedWorkItemState;
+    }
+
+    public int getSelectedWorkItemState() {
+        return selectedWorkItemState;
     }
 }

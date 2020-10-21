@@ -4,6 +4,7 @@ import android.util.Log;
 
 
 import com.example.apiexcute2.dataRecord.AnimViewRelationRecog;
+import com.example.apiexcute2.util.ProcessEventUtil;
 
 import de.robv.android.xposed.XC_MethodHook;
 
@@ -17,5 +18,6 @@ public class ScrollComputeScrollOffset extends XC_MethodHook {
             Log.i("LZH","scroll finish");
         }
         relationRecog.recordScrollView(obj);
+
     }
 }

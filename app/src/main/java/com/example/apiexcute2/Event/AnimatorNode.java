@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static com.example.apiexcute2.Event.MyEvent.VIEW_PATH;
+import static com.example.apiexcute2.model.eventModel.MyEvent.VIEW_PATH;
 
 public class AnimatorNode {
     public static final String ObjectAnimatorType = "ObjectAnimator";
