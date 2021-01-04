@@ -1,4 +1,4 @@
-package com.example.apiexcute2.monitor;
+ package com.example.apiexcute2.monitor;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -19,6 +19,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
 public class OnDrawMonitor {
+    private static String TAG = "OnDrawMonitor";
     private static volatile OnDrawMonitor onDrawMonitor;
     //onDraw调用时设置为true
     private boolean drawFlag = false;
@@ -28,6 +29,8 @@ public class OnDrawMonitor {
     private View view;
     //表示是否要开始检查视图界面
     private boolean APIStartFlag ;
+    //前一时刻的页面状态
+    private List<ViewInfo> preWindowStructure;
     public static OnDrawMonitor getInstance(){
         if(onDrawMonitor==null){
             synchronized (OnDrawMonitor.class){
@@ -104,8 +107,43 @@ public class OnDrawMonitor {
         });
         return futureTask;
     }
-    private void startTask(FutureTask<Object> futureTask){
-        new Thread(futureTask).start();
+    private void startTask(final FutureTask<Object> futureTask){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                boolean same = false;
+                while(!same){
+                    Log.i(TAG,"start get curWindow");
+                    List<ViewInfo> curWindowStructure = ViewUtil.obtainStructureOfWindow(view.getContext());
+                    if(preWindowStructure==null){
+                        Log.i("TAG","preWindow is null");
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }else{
+                        Log.i(TAG,"reckon sim");
+                        float sim = MatchUtil.obtainStructureSimilarity(curWindowStructure,
+                                preWindowStructure);
+                        Log.i(TAG,"sim is "+sim);
+                        if(sim>0.92f){
+                            same = true;
+                        }else {
+                            try {
+                                Thread.sleep(200);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                    preWindowStructure = curWindowStructure;
+                }
+                Log.i(TAG,"start futureTask");
+                new Thread(futureTask).start();
+            }
+        }).start();
+
     }
 
     /**

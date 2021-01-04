@@ -14,7 +14,6 @@ import android.view.animation.Animation;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import androidx.fragment.app.Fragment;
 
 import com.example.apiexcute2.xposed.event.ActivityOnCreateHook;
 import com.example.apiexcute2.xposed.event.ActivityOnResumeHook;

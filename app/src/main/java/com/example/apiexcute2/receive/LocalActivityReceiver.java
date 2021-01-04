@@ -61,7 +61,7 @@ public class LocalActivityReceiver extends BroadcastReceiver{
             case ON_RESUME:
                 showActivityName = intent.getStringExtra(RESUME_ACTIVITY);
                 ActivityUtil.setCurActivityName(showActivityName);
-                Log.i("LZH","show Activity finish: "+System.currentTimeMillis());
+//                Log.i("LZH","show Activity finish: "+System.currentTimeMillis());
 //                Log.i("LZH","slefActivity"+selfActivityName+" Current ActivityName resume "+showActivityName);
                 break;
             case START_EVENT:
@@ -87,6 +87,7 @@ public class LocalActivityReceiver extends BroadcastReceiver{
                 break;
             case LocalActivityReceiver.EXECUTE_EVENT:
                 boolean isAvailable = MethodTrackPool.isAvailable();
+                Log.i("LZH","state: "+isAvailable);
                 if(!isAvailable){
                     break;
                 }
@@ -98,10 +99,10 @@ public class LocalActivityReceiver extends BroadcastReceiver{
                 }
                 myEvent = workItem.getMyEvent();
                 String topActivityName = ActivityUtil.getTopActivityName(selfActivity.getApplicationContext());
-                if(!topActivityName.equals(showActivityName)){
-                    showActivityName = topActivityName;
-                    Log.i("LZH","change topActivityName");
-                }
+//                if(!topActivityName.equals(showActivityName)){
+//                    showActivityName = topActivityName;
+//                    Log.i("LZH","change topActivityName");
+//                }
                 Log.i("LZH",selfActivityName+"\n"+showActivityName+"\n"+myEvent.getActivityId());
                 //有当前页面检查
                 if(showActivityName.compareTo(selfActivityName)!=0||!selfActivityName.contains(myEvent.getActivityId())){
@@ -150,6 +151,11 @@ public class LocalActivityReceiver extends BroadcastReceiver{
 //            textView = (TextView) getViewByPath2(myEvent.getPath());
             textView = (TextView) ViewUtil.getViewByPath2(myEvent.getPath(),selfActivity.getApplicationContext());
             if(textView==null){
+                textView = (TextView) ViewUtil.findByViewCoordinate(selfActivity.getWindow().getDecorView(),
+                        myEvent.getPath(),myEvent.getViewX(),myEvent.getViewY(),
+                        myEvent.getWidth(),myEvent.getHeight());
+            }
+            if(textView==null){
                 textView = selfActivity.findViewById(Integer.valueOf(myEvent.getComponentId()));
             }
             if(textView==null||!ViewUtil.isVisible(textView)){
@@ -166,6 +172,14 @@ public class LocalActivityReceiver extends BroadcastReceiver{
                 //可能会存在多个相同路径的view
                 Log.i("LZH","find by getPath2");
                 view = ViewUtil.getViewByPath2(myEvent.getPath(),selfActivity.getApplicationContext());
+            }
+            if(view==null){
+                view = ViewUtil.findByViewCoordinate(selfActivity.getWindow().getDecorView(),
+                        myEvent.getPath(),myEvent.getViewX(),myEvent.getViewY(),
+                        myEvent.getWidth(),myEvent.getHeight());
+            }
+            if(view==null){
+                view = selfActivity.findViewById(Integer.valueOf(myEvent.getComponentId()));
             }
             if(view!=null){
                 Log.i("LZH","view Width: "+view.getWidth()+" height: "+view.getHeight());

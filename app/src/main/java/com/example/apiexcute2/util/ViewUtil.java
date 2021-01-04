@@ -182,6 +182,67 @@ public class ViewUtil {
         }
         return null;
     }
+    public static View findByViewCoordinate(View rootView,String path,float x,float y,float width,float height){
+        List<String> listName = getViewNameList(path);
+        View view = dfsFindView(rootView,listName,0,x,y,width,height);
+        if(view!=null){
+            return view;
+        }
+        return null;
+    }
+    private static View dfsFindView(View curView , List<String> viewPathNames,int pos,
+                                    float x,float y,float width, float height){
+        String curName = curView.getClass().getName();
+        if(pos>=viewPathNames.size()){
+            return null;
+        }
+        if(curName.equals(viewPathNames.get(pos))){
+            if(pos==viewPathNames.size()-1){
+                if(isSameView(curView,x,y,width,height)){
+                    return curView;
+                }
+            }else if(curView instanceof ViewGroup){
+                ViewGroup viewGroup = (ViewGroup) curView;
+                int childCount = viewGroup.getChildCount();
+                for(int i=0;i<childCount;i++){
+                    View target = dfsFindView(viewGroup.getChildAt(i),viewPathNames,pos+1,
+                            x,y,width,height);
+                    if(target!=null){
+                        return target;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 检查当前View的信息是否与给定的x,y,width,height相同
+     * @param view
+     * @param x
+     * @param y
+     * @param width
+     * @param height
+     * @return
+     */
+    private static boolean isSameView(View view,float x,float y,float width,float height){
+        if(Math.abs(obtainX(view)-x)<2&&
+            Math.abs(obtainY(view)-y)<2&&
+            Math.abs(obtainWidth(view)-width)<2&&
+            Math.abs(obtainHeight(view)-height)<2){
+            return true;
+        }
+        return false;
+    }
+    private static List<String> getViewNameList(String path){
+        String viewFlag[] = path.split("/");
+        List<String> listName = new ArrayList<>();
+        for(String flag:viewFlag){
+            String strs[] = flag.split(":");
+            listName.add(strs[0]);
+        }
+        return listName;
+    }
     public static void showView(View view){
         String str = view.getClass().getName();
         if(view instanceof TextView){
@@ -264,9 +325,11 @@ public class ViewUtil {
         }
         for(int i=0;i<listViews.size();i++){
             View view = listViews.get(i);
-
+            if(view==null){
+                continue;
+            }
             if(!isVisible(view)){
-                Log.i("LZH","Invisible: "+view.getClass().getName()+ActivityUtil.getActivity(view).getClass().getName());
+//                Log.i("LZH","Invisible: "+view.getClass().getName()+ActivityUtil.getActivity(view).getClass().getName());
                 continue;
             }
             Log.i("LZH","top view: "+view.getClass().getName());

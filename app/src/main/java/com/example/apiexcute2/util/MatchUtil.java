@@ -97,7 +97,7 @@ public class MatchUtil {
         int sameNum = reckonViewTreeSimilarity( structure1, structure2 );
         float part1 = Math.min(layer1,layer2)/maxLayer*p1;
         float part2 = Math.min(viewNum1,viewNum2)/maxNum*p1;
-        float part3 = sameNum/viewNum1*p3;
+        float part3 = sameNum/(viewNum1+viewNum2-sameNum)*p3;
         float res = part1 + part2 + part3 + p4;
         float ss = sameNum/Math.min(viewNum1,viewNum2);
         if(ss<0.46){
@@ -130,9 +130,11 @@ public class MatchUtil {
             for(ViewInfo matchViewInfo:matchedViewInfoList){
                 float similarity = obtainViewSimilarity(viewInfo,matchViewInfo);
 //                Log.i("LZH","check: "+similarity);
+                int temp = 0;
                 //view对的相似度大于阈值，res加一
                 if(similarity>=w){
-                    res++;
+//                    res++;
+                    temp = 1;
                 }
 //                if(viewInfo.getChilds()==null){
 //                    Log.i("LZH","viewInfo child is null");
@@ -141,7 +143,7 @@ public class MatchUtil {
 //                    Log.i("LZH","child2 size: "+matchViewInfo.getChilds().size());
 //                }
                 //计算子视图中 相似度大于阈值的元素对的个数
-                int temp = reckonViewTreeSimilarity(viewInfo.getChilds(), matchViewInfo.getChilds());
+                temp += reckonViewTreeSimilarity(viewInfo.getChilds(), matchViewInfo.getChilds());
 //                Log.i("LZH","temp: "+temp);
                 maxNum = Math.max(maxNum,temp);
             }
@@ -169,6 +171,9 @@ public class MatchUtil {
                 viewInfo.getViewIndex()==childViewInfo.getViewIndex()){
                 matchedList.add(viewInfo);
             }
+//            if( viewInfo.getViewName().equals(childViewInfo.getViewName()) ){
+//                matchedList.add(viewInfo);
+//            }
         }
         return matchedList;
     }

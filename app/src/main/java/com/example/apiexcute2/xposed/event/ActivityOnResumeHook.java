@@ -28,6 +28,7 @@ public class ActivityOnResumeHook extends XC_MethodHook {
         Activity activity = (Activity) param.thisObject;
 //        ComponentName componentName = activity.getComponentName();
         ComponentName componentName = activity.getComponentName();
+        Log.i("LZH","onResume: "+activity.getClass().getName());
     }
 
     @Override
